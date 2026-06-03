@@ -1,0 +1,5 @@
+backend/minimax.go
+.idea
+.claude
+frontend/dist
+frontend/node_modules
