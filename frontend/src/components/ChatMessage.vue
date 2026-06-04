@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from 'vue'
+import { marked } from 'marked'
+import DOMPurify from 'isomorphic-dompurify'
 
 const props = defineProps({
   message: {
@@ -15,6 +17,19 @@ const isAi = computed(() => props.message.role === 'ai')
 const timeStr = computed(() => {
   const d = new Date(props.message.timestamp)
   return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+})
+
+// Parse markdown to HTML for AI messages
+const renderedContent = computed(() => {
+  if (isUser.value) {
+    return props.message.content
+  }
+  const rawHtml = marked.parse(props.message.content || '', {
+    breaks: true,
+    gfm: true,
+    async: false,
+  })
+  return DOMPurify.sanitize(rawHtml)
 })
 </script>
 
@@ -50,7 +65,8 @@ const timeStr = computed(() => {
       </div>
       <div class="bubble-wrapper">
         <div class="bubble">
-          <div class="content">{{ message.content }}</div>
+          <div v-if="isUser" class="content">{{ message.content }}</div>
+          <div v-else class="content markdown-body" v-html="renderedContent"></div>
         </div>
         <div class="meta">
           <span class="role">{{ isUser ? '你' : 'AI' }}</span>
@@ -135,6 +151,10 @@ const timeStr = computed(() => {
   line-height: 1.65;
   font-size: 14.5px;
   word-break: break-word;
+}
+
+/* User messages: preserve line breaks */
+.message-user .content {
   white-space: pre-wrap;
 }
 
@@ -180,5 +200,150 @@ const timeStr = computed(() => {
     padding: 10px 14px;
     font-size: 14px;
   }
+}
+
+/* Markdown styles */
+.markdown-body {
+  line-height: 1.7;
+}
+
+.markdown-body :first-child {
+  margin-top: 0;
+}
+
+.markdown-body :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 16px 0 10px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.markdown-body h1 {
+  font-size: 18px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+
+.markdown-body h2 {
+  font-size: 16px;
+}
+
+.markdown-body h3 {
+  font-size: 15px;
+}
+
+.markdown-body p {
+  margin: 10px 0;
+}
+
+.markdown-body strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-body em {
+  font-style: italic;
+}
+
+.markdown-body a {
+  color: var(--accent-light);
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.markdown-body li {
+  margin: 4px 0;
+}
+
+.markdown-body ul li {
+  list-style-type: disc;
+}
+
+.markdown-body ol li {
+  list-style-type: decimal;
+}
+
+.markdown-body code {
+  background: rgba(108, 92, 231, 0.15);
+  color: var(--accent-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.markdown-body pre {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+.markdown-body pre code {
+  background: none;
+  color: var(--text-primary);
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 12px 0;
+  padding: 4px 14px;
+  color: var(--text-secondary);
+  background: rgba(108, 92, 231, 0.06);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdown-body th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+}
+
+.markdown-body tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.markdown-body img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
 }
 </style>
