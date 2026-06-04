@@ -4,16 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 
-	"github.com/cloudwego/eino-ext/components/model/claude"
+	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 )
 
 type CoreAiService struct {
-	Model *claude.ChatModel
+	Model model.BaseChatModel
 }
 
-func NewCoreAiService(model *claude.ChatModel) *CoreAiService {
+func NewCoreAiService(model model.BaseChatModel) *CoreAiService {
 	return &CoreAiService{Model: model}
 }
 
@@ -25,8 +26,11 @@ func (c *CoreAiService) ChatWithModel(ctx context.Context, message []*schema.Mes
 	defer stream.Close()
 	for {
 		chunk, err := stream.Recv()
-		if err != nil {
+		if errors.Is(err, io.EOF) {
 			break
+		}
+		if err != nil {
+			return err
 		}
 		fmt.Println(chunk)
 	}
