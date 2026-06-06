@@ -7,27 +7,25 @@ import (
 	"gopherspace/internal/gateway"
 	"log"
 
-	"github.com/cloudwego/eino/schema"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	messages := []*schema.Message{
-		schema.SystemMessage("You are a helpful assistant."),
-		schema.UserMessage("Hi, how are you?"),
-	}
 	ctx := context.Background()
 	model, err := backend.Minimax(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
-	service := core_ai.NewCoreAiService(model)
-	err = service.ChatWithModel(ctx, messages)
+	router := core_ai.NewRouterAgent(model)
+	reviewer := core_ai.NewReviewerAgent(model)
+	consultant := core_ai.NewConsultantAgent(model)
+	tutor := core_ai.NewTutorAgent(model)
+	graph, err := core_ai.NewChatGraph(ctx, router, reviewer, consultant, tutor, model)
 	if err != nil {
 		log.Fatal(err)
 	}
 	r := gin.Default()
-	hub := gateway.NewHub(core_ai.NewCoreAiService(model))
+	hub := gateway.NewHub(graph)
 	go hub.Run()
 	r.GET("/v1/ws", gateway.HttpToWSEntry(hub))
 	r.Run(":8181")

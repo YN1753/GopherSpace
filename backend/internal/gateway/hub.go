@@ -9,16 +9,16 @@ type Hub struct {
 	Broadcast  chan []byte      // 广播队列：塞进这里的消息会发给所有人
 	Register   chan *Client     // 注册队列：新学生连进来了，往这里丢
 	Unregister chan *Client     // 注销队列：学生网页关闭了，往这里丢
-	AiModel    *core_ai.CoreAiService
+	ChatGraph  *core_ai.ChatGraph
 }
 
-func NewHub(ai *core_ai.CoreAiService) *Hub {
+func NewHub(ai *core_ai.ChatGraph) *Hub {
 	return &Hub{
 		Clients:    make(map[*Client]bool),
 		Broadcast:  make(chan []byte),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
-		AiModel:    ai,
+		ChatGraph:  ai,
 	}
 }
 func (h *Hub) Run() {

@@ -39,13 +39,15 @@ function connect() {
           // Streaming chunk
           if (data.content) {
             if (!currentAiMessage) {
-              currentAiMessage = {
+              const msg = {
                 id: Date.now(),
                 role: 'ai',
                 content: data.content.replace(/^\n+/, ''),
                 timestamp: new Date(),
               }
-              messages.push(currentAiMessage)
+              messages.push(msg)
+              // 从 reactive 数组取回代理引用，后续更新才能被 Vue 检测到
+              currentAiMessage = messages[messages.length - 1]
             } else {
               currentAiMessage.content += data.content
             }

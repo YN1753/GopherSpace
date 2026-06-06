@@ -19,11 +19,12 @@ func HttpToWSEntry(hub *Hub) gin.HandlerFunc {
 		}
 
 		client := &Client{
-			Hub:     hub,
-			Conn:    conn,
-			Send:    make(chan []byte, 256),
-			AiModel: hub.AiModel,
+			Hub:       hub,
+			Conn:      conn,
+			Send:      make(chan []byte, 256),
+			ChatGraph: hub.ChatGraph,
 		}
+
 
 		hub.Register <- client
 

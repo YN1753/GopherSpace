@@ -2,6 +2,7 @@ package core_ai
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/cloudwego/eino/components/model"
@@ -34,6 +35,7 @@ func (r *RouterAgent) Decide(ctx context.Context, input string) (string, error) 
 		return "tutor", err
 	}
 	decision := strings.TrimSpace(strings.ToLower(resp.Content))
+	log.Printf("Router 决策: input=%q -> decision=%q", input, decision)
 	if decision == "reviewer" || decision == "consultant" {
 		return decision, nil
 	}
